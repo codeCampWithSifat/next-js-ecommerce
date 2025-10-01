@@ -22,9 +22,9 @@ import ButtonLoading from "@/components/ui/Application/ButtonLoading";
 import { FaRegEyeSlash } from "react-icons/fa";
 import { FaRegEye } from "react-icons/fa6";
 import Link from "next/link";
-import { WEBSITE_REGISTER } from "@/routes/WebsiteRoutes";
+import { WEBSITE_LOGIN, WEBSITE_REGISTER } from "@/routes/WebsiteRoutes";
 
-const LoginPage = () => {
+const RegisterPage = () => {
   const [loading, setLoading] = useState(false);
 
   const [isTypePassword, setIsTypePassword] = useState(true);
@@ -61,8 +61,8 @@ const LoginPage = () => {
           />
         </div>
         <div className="text-center">
-          <h1 className="2xl font-semibold">Login Into Account</h1>
-          <p>Login Into Your Account By Filling This Form</p>
+          <h1 className="2xl font-semibold">Create Account</h1>
+          <p>Create Account For New User</p>
         </div>
 
         <div className="mt-5">
@@ -119,18 +119,15 @@ const LoginPage = () => {
                 <ButtonLoading
                   loading={loading}
                   type="submit"
-                  text="Login"
+                  text="Create Account"
                   className="w-full"
                 />
               </div>
               <div className="text-center">
                 <div className="flex justify-center items-center gap-2 ">
-                  <p>Don't Have Account </p>
-                  <Link
-                    href={WEBSITE_REGISTER}
-                    className="text-primary underline"
-                  >
-                    Create Account
+                  <p>Already Have Account </p>
+                  <Link href={WEBSITE_LOGIN} className="text-primary underline">
+                    Login Into Account
                   </Link>
                 </div>
                 <div className="mt-3">
@@ -147,4 +144,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default RegisterPage;
