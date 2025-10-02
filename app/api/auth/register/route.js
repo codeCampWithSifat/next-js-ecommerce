@@ -2,6 +2,7 @@ import { connectDB } from "@/lib/databaseConnection";
 import { response } from "@/lib/helperFunction";
 import { zSchema } from "@/lib/zodSchema";
 import UserModel from "@/models/User.model";
+import { SignJWT } from "jose";
 
 export async function POST(request) {
   try {
@@ -39,5 +40,12 @@ export async function POST(request) {
     });
 
     await newRegistration.save();
+
+    const secret = new TextEncoder.encode(process.env.SECRET_KEY);
+    const token = await new SignJWT({ userId: newRegistration._id })
+      .setIssuedAt()
+      .setExpirationTime("24h")
+      .setProtectedHeader({ alg: "HS256" })
+      .sign(secret);
   } catch (error) {}
 }
