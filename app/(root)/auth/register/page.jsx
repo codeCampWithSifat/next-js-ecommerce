@@ -7,11 +7,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zSchema } from "@/lib/zodSchema";
-import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -22,7 +20,7 @@ import ButtonLoading from "@/components/ui/Application/ButtonLoading";
 import { FaRegEyeSlash } from "react-icons/fa";
 import { FaRegEye } from "react-icons/fa6";
 import Link from "next/link";
-import { WEBSITE_LOGIN, WEBSITE_REGISTER } from "@/routes/WebsiteRoutes";
+import { WEBSITE_LOGIN } from "@/routes/WebsiteRoutes";
 
 const RegisterPage = () => {
   const [loading, setLoading] = useState(false);
@@ -31,21 +29,29 @@ const RegisterPage = () => {
 
   const formSchema = zSchema
     .pick({
+      name: true,
       email: true,
       password: true,
     })
     .extend({
-      password: z.string().min(5, "Password Field is Required"),
+      confirmPassword: z.string(),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      path: ["confirmPassword"],
+      message: "Password Not Matched",
     });
+
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      name: "",
       email: "",
       password: "",
+      confirmPassword: "",
     },
   });
 
-  const handleLoginSubmit = async (values) => {
+  const handleRegisterSubmit = async (values) => {
     console.log(values);
   };
   return (
@@ -67,7 +73,23 @@ const RegisterPage = () => {
 
         <div className="mt-5">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleLoginSubmit)}>
+            <form onSubmit={form.handleSubmit(handleRegisterSubmit)}>
+              <div className="mb-3">
+                <FormField
+                  control={form.control}
+                  name="Name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Your Name</FormLabel>
+                      <FormControl>
+                        <Input type="text" placeholder="Your Name" {...field} />
+                      </FormControl>
+
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
               <div className="mb-3">
                 <FormField
                   control={form.control}
@@ -97,8 +119,29 @@ const RegisterPage = () => {
                       <FormLabel>Password</FormLabel>
                       <FormControl>
                         <Input
-                          type={isTypePassword ? "password" : "text"}
+                          // type={isTypePassword ? "password" : "text"}
+                          type="password"
                           placeholder="Enter Your Password"
+                          {...field}
+                        />
+                      </FormControl>
+
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="mb-5">
+                <FormField
+                  control={form.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem className="relative">
+                      <FormLabel>Confirm Password</FormLabel>
+                      <FormControl>
+                        <Input
+                          type={isTypePassword ? "password" : "text"}
+                          placeholder="Enter Confirm Password"
                           {...field}
                         />
                       </FormControl>
