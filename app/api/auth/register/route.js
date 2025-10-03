@@ -1,5 +1,7 @@
+import { emailVerificationLink } from "@/email/emailVerificationLink";
 import { connectDB } from "@/lib/databaseConnection";
-import { response } from "@/lib/helperFunction";
+import { catchError, response } from "@/lib/helperFunction";
+import { sendMail } from "@/lib/sendEmail";
 import { zSchema } from "@/lib/zodSchema";
 import UserModel from "@/models/User.model";
 import { SignJWT } from "jose";
@@ -41,11 +43,23 @@ export async function POST(request) {
 
     await newRegistration.save();
 
-    const secret = new TextEncoder.encode(process.env.SECRET_KEY);
-    const token = await new SignJWT({ userId: newRegistration._id })
+    const secret = new TextEncoder().encode(process.env.SECRET_KEY);
+    const token = await new SignJWT({ userId: newRegistration._id.toString() })
       .setIssuedAt()
       .setExpirationTime("24h")
       .setProtectedHeader({ alg: "HS256" })
       .sign(secret);
-  } catch (error) {}
+
+    await sendMail(
+      "Email Verification Request From Developer Sifat",
+      email,
+      emailVerificationLink(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/auth/verify-email/${token}`
+      )
+    );
+
+    return response(true, 200, "Registration Successfully Verify Your Email");
+  } catch (error) {
+    catchError(error);
+  }
 }
