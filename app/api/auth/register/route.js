@@ -51,7 +51,7 @@ export async function POST(request) {
       .sign(secret);
 
     await sendMail(
-      "Email Verification Request From Developer Sifat",
+      "Email Verification Request",
       email,
       emailVerificationLink(
         `${process.env.NEXT_PUBLIC_BASE_URL}/auth/verify-email/${token}`
