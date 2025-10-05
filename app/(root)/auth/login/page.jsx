@@ -74,7 +74,24 @@ const LoginPage = () => {
 
   // Otp Verification
   const handleOtpVerification = async () => {
-    alert("Hello Developer Sifat");
+    try {
+      setOtpVerificationLoading(true);
+      const { data: registerResponse } = await axios.post(
+        `/api/auth/verify-otp`,
+        values
+      );
+      if (!registerResponse.success) {
+        throw new Error(registerResponse.message);
+      }
+      setOtpEmail("");
+      // alert(registerResponse.message);
+      showToast("success", registerResponse.message);
+    } catch (error) {
+      // alert(error.message);
+      showToast("error", error.message);
+    } finally {
+      setOtpVerificationLoading(false);
+    }
   };
   return (
     <Card className="w-[400px]">
