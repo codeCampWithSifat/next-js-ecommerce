@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Logo from "../../../../public/assets/images/logo-black.png";
 import Image from "next/image";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import { email, z } from "zod";
 import { useForm } from "react-hook-form";
 import { zSchema } from "@/lib/zodSchema";
 import { Button } from "@/components/ui/button";
@@ -23,11 +23,16 @@ import { FaRegEyeSlash } from "react-icons/fa";
 import { FaRegEye } from "react-icons/fa6";
 import Link from "next/link";
 import { WEBSITE_REGISTER } from "@/routes/WebsiteRoutes";
+import axios from "axios";
+import { showToast } from "@/lib/showToast";
+import OTPVerification from "@/components/ui/Application/OTPVerification";
 
 const LoginPage = () => {
   const [loading, setLoading] = useState(false);
+  const [otpVerificationLoading, setOtpVerificationLoading] = useState(false);
 
   const [isTypePassword, setIsTypePassword] = useState(true);
+  const [otpEmail, setOtpEmail] = useState();
 
   const formSchema = zSchema
     .pick({
@@ -46,7 +51,30 @@ const LoginPage = () => {
   });
 
   const handleLoginSubmit = async (values) => {
-    console.log(values);
+    try {
+      setLoading(true);
+      const { data: registerResponse } = await axios.post(
+        `/api/auth/login`,
+        values
+      );
+      if (!registerResponse.success) {
+        throw new Error(registerResponse.message);
+      }
+      setOtpEmail(values.email);
+      form.reset();
+      // alert(registerResponse.message);
+      showToast("success", registerResponse.message);
+    } catch (error) {
+      // alert(error.message);
+      showToast("error", error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Otp Verification
+  const handleOtpVerification = async () => {
+    alert("Hello Developer Sifat");
   };
   return (
     <Card className="w-[400px]">
@@ -60,88 +88,101 @@ const LoginPage = () => {
             className="max-w-[150px]"
           />
         </div>
-        <div className="text-center">
-          <h1 className="2xl font-semibold">Login Into Account</h1>
-          <p>Login Into Your Account By Filling This Form</p>
-        </div>
 
-        <div className="mt-5">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleLoginSubmit)}>
-              <div className="mb-3">
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="email"
-                          placeholder="example@gmail.com"
-                          {...field}
-                        />
-                      </FormControl>
+        {!otpEmail ? (
+          <>
+            <div className="text-center">
+              <h1 className="2xl font-semibold">Login Into Account</h1>
+              <p>Login Into Your Account By Filling This Form</p>
+            </div>
 
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="mb-5">
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem className="relative">
-                      <FormLabel>Password</FormLabel>
-                      <FormControl>
-                        <Input
-                          type={isTypePassword ? "password" : "text"}
-                          placeholder="Enter Your Password"
-                          {...field}
-                        />
-                      </FormControl>
-                      <button
-                        className="absolute top-1/2 right-2 cursor-pointer"
-                        type="button"
-                        onClick={() => setIsTypePassword(!isTypePassword)}
+            <div className="mt-5">
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(handleLoginSubmit)}>
+                  <div className="mb-3">
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="email"
+                              placeholder="example@gmail.com"
+                              {...field}
+                            />
+                          </FormControl>
+
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div className="mb-5">
+                    <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem className="relative">
+                          <FormLabel>Password</FormLabel>
+                          <FormControl>
+                            <Input
+                              type={isTypePassword ? "password" : "text"}
+                              placeholder="Enter Your Password"
+                              {...field}
+                            />
+                          </FormControl>
+                          <button
+                            className="absolute top-1/2 right-2 cursor-pointer"
+                            type="button"
+                            onClick={() => setIsTypePassword(!isTypePassword)}
+                          >
+                            {isTypePassword ? <FaRegEyeSlash /> : <FaRegEye />}
+                          </button>
+
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <ButtonLoading
+                      loading={loading}
+                      type="submit"
+                      text="Login"
+                      className="w-full"
+                    />
+                  </div>
+                  <div className="text-center">
+                    <div className="flex justify-center items-center gap-2 ">
+                      <p>Don't Have Account </p>
+                      <Link
+                        href={WEBSITE_REGISTER}
+                        className="text-primary underline"
                       >
-                        {isTypePassword ? <FaRegEyeSlash /> : <FaRegEye />}
-                      </button>
-
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="mb-3">
-                <ButtonLoading
-                  loading={loading}
-                  type="submit"
-                  text="Login"
-                  className="w-full"
-                />
-              </div>
-              <div className="text-center">
-                <div className="flex justify-center items-center gap-2 ">
-                  <p>Don't Have Account </p>
-                  <Link
-                    href={WEBSITE_REGISTER}
-                    className="text-primary underline"
-                  >
-                    Create Account
-                  </Link>
-                </div>
-                <div className="mt-3">
-                  <Link href="" className="text-primary underline">
-                    Forget Password
-                  </Link>
-                </div>
-              </div>
-            </form>
-          </Form>
-        </div>
+                        Create Account
+                      </Link>
+                    </div>
+                    <div className="mt-3">
+                      <Link href="" className="text-primary underline">
+                        Forget Password
+                      </Link>
+                    </div>
+                  </div>
+                </form>
+              </Form>
+            </div>
+          </>
+        ) : (
+          <>
+            <OTPVerification
+              email={email}
+              loading={otpVerificationLoading}
+              onSubmit={handleOtpVerification}
+            />
+          </>
+        )}
       </CardContent>
     </Card>
   );
