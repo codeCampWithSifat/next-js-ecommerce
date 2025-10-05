@@ -3,7 +3,6 @@ import { catchError, response } from "@/lib/helperFunction";
 import { zSchema } from "@/lib/zodSchema";
 import OTPModel from "@/models/Otp.model";
 import { SignJWT } from "jose";
-import mongoose from "mongoose";
 import { cookies } from "next/headers";
 
 export async function POST(request) {
@@ -54,6 +53,20 @@ export async function POST(request) {
       .sign(secret);
 
     const cookieStore = await cookies();
+
+    cookieStore.set({
+      name: "access_token",
+      value: token,
+      httpOnly: process.env.NODE_ENV === "production",
+      path: "/",
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+    });
+
+    // remove otp after validation
+    await getOtpData.deleteOne();
+
+    return response(true, 200, "Login Successful", loggedInUserData);
   } catch (error) {
     return catchError(error);
   }

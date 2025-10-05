@@ -194,9 +194,9 @@ const LoginPage = () => {
         ) : (
           <>
             <OTPVerification
-              email={email}
-              loading={otpVerificationLoading}
+              email={otpEmail}
               onSubmit={handleOtpVerification}
+              loading={otpVerificationLoading}
             />
           </>
         )}

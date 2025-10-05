@@ -12,8 +12,13 @@ import {
 } from "@/components/ui/form";
 import ButtonLoading from "./ButtonLoading";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "../input-otp";
+import { useState } from "react";
+import { showToast } from "@/lib/showToast";
+import axios from "axios";
 
 const OTPVerification = ({ email, onSubmit, loading }) => {
+  const [isResendingOtp, setIsResendingOtp] = useState(false);
+
   const formSchema = zSchema.pick({
     otp: true,
     email: true,
@@ -29,6 +34,25 @@ const OTPVerification = ({ email, onSubmit, loading }) => {
 
   const handleOtpVerification = async (values) => {
     onSubmit(values);
+  };
+
+  const resendOTP = async () => {
+    try {
+      setIsResendingOtp(true);
+      const { data: resendOtpResponse } = await axios.post(
+        `/api/auth/resend-otp`,
+        { email }
+      );
+
+      if (!resendOtpResponse.success) {
+        throw new Error(resendOtpResponse.message);
+      }
+      showToast("success", resendOtpResponse.message);
+    } catch (error) {
+      showToast("error", error.message);
+    } finally {
+      setIsResendingOtp(false);
+    }
   };
   return (
     <div>
@@ -77,10 +101,12 @@ const OTPVerification = ({ email, onSubmit, loading }) => {
             />
             <div className="text-center mt-5 ">
               <button
+                onClick={resendOTP}
                 className="text-violet-600 cursor-pointer hover:underline"
-                type="submit"
+                type="button"
+                disabled={isResendingOtp}
               >
-                Resend OTP
+                {isResendingOtp ? "Resending..." : "Resend OTP"}
               </button>
             </div>
           </div>
