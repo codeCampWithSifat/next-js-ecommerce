@@ -18,14 +18,14 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import ButtonLoading from "@/components/ui/Application/ButtonLoading";
+import ButtonLoading from "@/components/Application/ButtonLoading";
 import { FaRegEyeSlash } from "react-icons/fa";
 import { FaRegEye } from "react-icons/fa6";
 import Link from "next/link";
 import { WEBSITE_REGISTER } from "@/routes/WebsiteRoutes";
 import axios from "axios";
 import { showToast } from "@/lib/showToast";
-import OTPVerification from "@/components/ui/Application/OTPVerification";
+import OTPVerification from "@/components/Application/OTPVerification";
 
 const LoginPage = () => {
   const [loading, setLoading] = useState(false);
@@ -53,17 +53,17 @@ const LoginPage = () => {
   const handleLoginSubmit = async (values) => {
     try {
       setLoading(true);
-      const { data: registerResponse } = await axios.post(
+      const { data: loginResponse } = await axios.post(
         `/api/auth/login`,
         values
       );
-      if (!registerResponse.success) {
-        throw new Error(registerResponse.message);
+      if (!loginResponse.success) {
+        throw new Error(loginResponse.message);
       }
       setOtpEmail(values.email);
       form.reset();
-      // alert(registerResponse.message);
-      showToast("success", registerResponse.message);
+      // alert(loginResponse.message);
+      showToast("success", loginResponse.message);
     } catch (error) {
       // alert(error.message);
       showToast("error", error.message);
@@ -73,19 +73,19 @@ const LoginPage = () => {
   };
 
   // Otp Verification
-  const handleOtpVerification = async () => {
+  const handleOtpVerification = async (values) => {
     try {
       setOtpVerificationLoading(true);
-      const { data: registerResponse } = await axios.post(
+      const { data: otpResendResponse } = await axios.post(
         `/api/auth/verify-otp`,
         values
       );
-      if (!registerResponse.success) {
-        throw new Error(registerResponse.message);
+      if (!otpResendResponse.success) {
+        throw new Error(otpResendResponse.message);
       }
       setOtpEmail("");
-      // alert(registerResponse.message);
-      showToast("success", registerResponse.message);
+      // alert(otpResendResponse.message);
+      showToast("success", otpResendResponse.message);
     } catch (error) {
       // alert(error.message);
       showToast("error", error.message);

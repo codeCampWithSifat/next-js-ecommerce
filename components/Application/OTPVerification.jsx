@@ -11,7 +11,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import ButtonLoading from "./ButtonLoading";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "../input-otp";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "../ui/input-otp";
 import { useState } from "react";
 import { showToast } from "@/lib/showToast";
 import axios from "axios";
