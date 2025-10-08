@@ -20,7 +20,7 @@ import ButtonLoading from "@/components/Application/ButtonLoading";
 import { FaRegEyeSlash } from "react-icons/fa";
 import { FaRegEye } from "react-icons/fa6";
 import Link from "next/link";
-import { WEBSITE_LOGIN } from "@/routes/WebsiteRoutes";
+import { WEBSITE_LOGIN, WEBSITE_RESETPASSWORD } from "@/routes/WebsiteRoutes";
 import axios from "axios";
 import { showToast } from "@/lib/showToast";
 
@@ -194,7 +194,10 @@ const RegisterPage = () => {
                   </Link>
                 </div>
                 <div className="mt-3">
-                  <Link href="" className="text-primary underline">
+                  <Link
+                    href={WEBSITE_RESETPASSWORD}
+                    className="text-primary underline"
+                  >
                     Forget Password
                   </Link>
                 </div>
