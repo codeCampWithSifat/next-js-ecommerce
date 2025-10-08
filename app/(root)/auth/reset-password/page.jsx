@@ -32,6 +32,7 @@ import { showToast } from "@/lib/showToast";
 import OTPVerification from "@/components/Application/OTPVerification";
 import { useDispatch } from "react-redux";
 import { login } from "@/store/reducer/authReducer";
+import UpdatePasswordPage from "@/components/Application/UpdatePassword";
 
 const ResetPasswordPage = () => {
   const [emailVerificationLoading, setEmailVerificationLoading] =
@@ -40,6 +41,7 @@ const ResetPasswordPage = () => {
   const [otpVerificationLoading, setOtpVerificationLoading] = useState(false);
 
   const [otpEmail, setOtpEmail] = useState();
+  const [isOtpVerified, setIsOtpVerified] = useState(false);
 
   const formSchema = zSchema.pick({
     email: true,
@@ -53,24 +55,39 @@ const ResetPasswordPage = () => {
   });
 
   const handleEmailVerification = async (values) => {
-    console.log("values", values);
+    try {
+      setEmailVerificationLoading(true);
+      const { data: sendOtpResponse } = await axios.post(
+        `/api/auth/reset-password/send-otp`,
+        values
+      );
+      if (!sendOtpResponse.success) {
+        throw new Error(sendOtpResponse.message);
+      }
+      setOtpEmail(values.email);
+      // alert(sendOtpResponse.message);
+      showToast("success", sendOtpResponse.message);
+    } catch (error) {
+      // alert(error.message);
+      showToast("error", error.message);
+    } finally {
+      setEmailVerificationLoading(false);
+    }
   };
 
   const handleOtpVerification = async (values) => {
     try {
       setOtpVerificationLoading(true);
       const { data: otpResendResponse } = await axios.post(
-        `/api/auth/verify-otp`,
+        `/api/auth/reset-password/verify-otp`,
         values
       );
       if (!otpResendResponse.success) {
         throw new Error(otpResendResponse.message);
       }
-      setOtpEmail("");
       // alert(otpResendResponse.message);
       showToast("success", otpResendResponse.message);
-
-      dispatch(login(otpResendResponse.data));
+      setIsOtpVerified(true);
     } catch (error) {
       // alert(error.message);
       showToast("error", error.message);
@@ -146,11 +163,15 @@ const ResetPasswordPage = () => {
           </>
         ) : (
           <>
-            <OTPVerification
-              email={otpEmail}
-              onSubmit={handleOtpVerification}
-              loading={otpVerificationLoading}
-            />
+            {!isOtpVerified ? (
+              <OTPVerification
+                email={otpEmail}
+                onSubmit={handleOtpVerification}
+                loading={otpVerificationLoading}
+              />
+            ) : (
+              <UpdatePasswordPage email={otpEmail} />
+            )}
           </>
         )}
       </CardContent>
