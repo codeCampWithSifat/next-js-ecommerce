@@ -23,6 +23,7 @@ import { FaRegEyeSlash } from "react-icons/fa";
 import { FaRegEye } from "react-icons/fa6";
 import Link from "next/link";
 import {
+  USER_DASHBOARD,
   WEBSITE_REGISTER,
   WEBSITE_RESETPASSWORD,
 } from "@/routes/WebsiteRoutes";
@@ -31,12 +32,16 @@ import { showToast } from "@/lib/showToast";
 import OTPVerification from "@/components/Application/OTPVerification";
 import { useDispatch } from "react-redux";
 import { login } from "@/store/reducer/authReducer";
+import { useRouter, useSearchParams } from "next/navigation";
+import { ADMIN_DASHBOARD } from "@/routes/AdminPanelRoutes";
 
 const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [otpVerificationLoading, setOtpVerificationLoading] = useState(false);
 
   const dispatch = useDispatch();
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
   const [isTypePassword, setIsTypePassword] = useState(true);
   const [otpEmail, setOtpEmail] = useState();
@@ -83,18 +88,25 @@ const LoginPage = () => {
   const handleOtpVerification = async (values) => {
     try {
       setOtpVerificationLoading(true);
-      const { data: otpResendResponse } = await axios.post(
+      const { data: otpResponse } = await axios.post(
         `/api/auth/verify-otp`,
         values
       );
-      if (!otpResendResponse.success) {
-        throw new Error(otpResendResponse.message);
+      if (!otpResponse.success) {
+        throw new Error(otpResponse.message);
       }
       setOtpEmail("");
-      // alert(otpResendResponse.message);
-      showToast("success", otpResendResponse.message);
+      // alert(otpResponse.message);
+      showToast("success", otpResponse.message);
 
-      dispatch(login(otpResendResponse.data));
+      dispatch(login(otpResponse.data));
+      if (searchParams.has("callback")) {
+        router.push(searchParams.get("callback"));
+      } else {
+        otpResponse.data.role === "admin"
+          ? router.push(ADMIN_DASHBOARD)
+          : router.push(USER_DASHBOARD);
+      }
     } catch (error) {
       // alert(error.message);
       showToast("error", error.message);
