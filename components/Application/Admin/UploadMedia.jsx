@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { showToast } from "@/lib/showToast";
+import axios from "axios";
 import { CldUploadWidget } from "next-cloudinary";
 import { FaPlus } from "react-icons/fa";
 
@@ -23,6 +24,18 @@ const UploadMedia = ({ isMultiple }) => {
       }));
 
     if (uploadedFiles.length > 0) {
+      try {
+        const { data: mediaUploadResponse } = await axios.post(
+          `/api/media/create`,
+          uploadedFiles
+        );
+        if (!mediaUploadResponse.success) {
+          throw new Error(mediaUploadResponse.message);
+        }
+        showToast("success", mediaUploadResponse.message);
+      } catch (error) {
+        showToast("error", error.message);
+      }
     }
   };
   return (

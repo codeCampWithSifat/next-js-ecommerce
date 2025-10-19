@@ -32,11 +32,6 @@ const mediaSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
-    title: {
-      type: String,
-      required: true,
-      trim: true,
-    },
     deletedAt: {
       type: String,
       default: null,
@@ -46,7 +41,7 @@ const mediaSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const mediaModel =
+const MediaModel =
   mongoose.models.Media || mongoose.model("Media", mediaSchema, "medias");
 
-export default mediaModel;
+export default MediaModel;
