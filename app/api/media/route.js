@@ -1,7 +1,7 @@
 import { connectDB } from "@/lib/databaseConnection";
 import { catchError, isAuthenticated, response } from "@/lib/helperFunction";
 import MediaModel from "@/models/Media.model";
-import { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 export async function GET(request) {
   try {
@@ -31,7 +31,7 @@ export async function GET(request) {
 
     const totalMedia = await MediaModel.countDocuments(filter);
 
-    return NextRequest.json({
+    return NextResponse.json({
       mediaData,
       hasMore: (page + 1) * limit < totalMedia,
     });
