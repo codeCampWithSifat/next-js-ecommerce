@@ -3,11 +3,17 @@
 import BreadCrumb from "@/components/Application/Admin/BreadCrumb";
 import UploadMedia from "@/components/Application/Admin/UploadMedia";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { ADMIN_DASHBOARD } from "@/routes/AdminPanelRoutes";
+import { ADMIN_DASHBOARD, ADMIN_MEDIA_SHOW } from "@/routes/AdminPanelRoutes";
 import axios from "axios";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Media from "@/components/Application/Admin/Media";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import useDeleteMutation from "@/hooks/useDeleteMutation";
 
 const breadcrumbData = [
   {
@@ -23,6 +29,23 @@ const breadcrumbData = [
 const MediaPage = () => {
   const [deleteType, setDeleteType] = useState("SD");
   const [selectedMedia, setSelectedMedia] = useState([]);
+
+  const [selectAll, setSelectAll] = useState(false);
+
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams) {
+      const trashOf = searchParams.get("trashof");
+      setSelectedMedia([]);
+      if (trashOf) {
+        setDeleteType("PD");
+      } else {
+        setDeleteType("SD");
+      }
+    }
+  }, [searchParams]);
+
   const fetchMedia = async (page, deleteType) => {
     const { data: response } = await axios.get(
       `/api/media?page=${page}&&limit=10&&deleteType=${deleteType}`
@@ -49,22 +72,100 @@ const MediaPage = () => {
     },
   });
 
-  console.log("data", data);
+  const deleteMutation = useDeleteMutation("media-data", "/api/media/delete");
 
-  const handleDelete = () => {
+  const handleDelete = (selectedMedia, deleteType) => {
     console.log("Button Clicked");
+    let c = true;
+    if (deleteType === "PD") {
+      c = window.confirm(
+        "Are you sure . You want to delete the data permanently"
+      );
+    }
+    if (c) {
+      deleteMutation.mutate({ selectedMedia, deleteType });
+    }
+    setSelectAll(false);
+    setSelectedMedia([]);
   };
+
+  const handleSelectAll = () => {
+    setSelectAll(!selectAll);
+  };
+
+  useEffect(() => {
+    if (selectAll) {
+      const ids = data.pages.flatMap((page) =>
+        page.mediaData.map((media) => media._id)
+      );
+      setSelectedMedia(ids);
+    } else {
+      setSelectedMedia([]);
+    }
+  }, [selectAll]);
 
   return (
     <div>
       <BreadCrumb breadcrumbData={breadcrumbData} />
 
       <div className="flex items-center justify-between w-full">
-        <h4 className="font-semibold text-xl uppercase">Media</h4>
-        <div className="flex items-center gap-5 ">
-          <UploadMedia />
+        <h4 className="font-semibold text-xl uppercase">
+          {deleteType === "SD" ? "Media" : "Media Trash"}
+        </h4>
+        <div className="flex  gap-5 ">
+          {deleteType === "SD" && <UploadMedia />}
+          <div className="flex  gap-3">
+            {deleteType === "SD" ? (
+              <Button type="button" variant="destructive">
+                <Link href={`${ADMIN_MEDIA_SHOW}?trashof=media`}>Trash</Link>
+              </Button>
+            ) : (
+              <Button type="button">
+                <Link href={`${ADMIN_MEDIA_SHOW}`}>Back To Media</Link>
+              </Button>
+            )}
+          </div>
         </div>
       </div>
+
+      {selectedMedia.length > 0 && (
+        <div className="py-2 mt-5 px-3 bg-violet-200 mb-2 rounded flex justify-between items-center text-black">
+          <Label>
+            <Checkbox
+              checked={selectAll}
+              onCheckedChange={handleSelectAll}
+              className="border-primary"
+            />
+            Select All
+          </Label>
+
+          <div className="flex gap-2">
+            {deleteType === "SD" ? (
+              <Button
+                onClick={() => handleDelete(selectedMedia, deleteType)}
+                variant="destructive"
+              >
+                Move Into Trash
+              </Button>
+            ) : (
+              <>
+                <Button
+                  onClick={() => handleDelete(selectedMedia, "RSD")}
+                  className="bg-green-500 hover:bg-green-600"
+                >
+                  Restore
+                </Button>
+                <Button
+                  onClick={() => handleDelete(selectedMedia, "RSD")}
+                  variant={"destructive"}
+                >
+                  Delete Permanently
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       <div>
         <CardContent>
