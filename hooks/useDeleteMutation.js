@@ -20,7 +20,7 @@ const useDeleteMutation = (querykey, deleteEndpoint) => {
     },
 
     onSuccess: (data) => {
-      showToast("success", message);
+      showToast("success", data.message);
       queryClient.invalidateQueries(querykey);
     },
     onError: (error) => {

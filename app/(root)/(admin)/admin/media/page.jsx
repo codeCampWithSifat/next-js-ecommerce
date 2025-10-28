@@ -5,7 +5,7 @@ import UploadMedia from "@/components/Application/Admin/UploadMedia";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ADMIN_DASHBOARD, ADMIN_MEDIA_SHOW } from "@/routes/AdminPanelRoutes";
 import axios from "axios";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import React, { useEffect, useState } from "react";
 import Media from "@/components/Application/Admin/Media";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { useSearchParams } from "next/navigation";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import useDeleteMutation from "@/hooks/useDeleteMutation";
+import ButtonLoading from "@/components/Application/ButtonLoading";
 
 const breadcrumbData = [
   {
@@ -33,6 +34,7 @@ const MediaPage = () => {
   const [selectAll, setSelectAll] = useState(false);
 
   const searchParams = useSearchParams();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (searchParams) {
@@ -74,16 +76,14 @@ const MediaPage = () => {
 
   const deleteMutation = useDeleteMutation("media-data", "/api/media/delete");
 
-  const handleDelete = (selectedMedia, deleteType) => {
+  const handleDelete = (ids, deleteType) => {
     console.log("Button Clicked");
     let c = true;
     if (deleteType === "PD") {
-      c = window.confirm(
-        "Are you sure . You want to delete the data permanently"
-      );
+      c = confirm("Are you sure . You want to delete the data permanently");
     }
     if (c) {
-      deleteMutation.mutate({ selectedMedia, deleteType });
+      deleteMutation.mutate({ ids, deleteType });
     }
     setSelectAll(false);
     setSelectedMedia([]);
@@ -113,7 +113,9 @@ const MediaPage = () => {
           {deleteType === "SD" ? "Media" : "Media Trash"}
         </h4>
         <div className="flex  gap-5 ">
-          {deleteType === "SD" && <UploadMedia />}
+          {deleteType === "SD" && (
+            <UploadMedia isMultiple={true} queryClient={queryClient} />
+          )}
           <div className="flex  gap-3">
             {deleteType === "SD" ? (
               <Button type="button" variant="destructive">
@@ -129,7 +131,7 @@ const MediaPage = () => {
       </div>
 
       {selectedMedia.length > 0 && (
-        <div className="py-2 mt-5 px-3 bg-violet-200 mb-2 rounded flex justify-between items-center text-black">
+        <div className="py-2  px-3 bg-violet-200 rounded flex justify-between items-center mt-5 text-black">
           <Label>
             <Checkbox
               checked={selectAll}
@@ -174,7 +176,7 @@ const MediaPage = () => {
           ) : status === "error" ? (
             <div className="text-red-500 text-sm">{error.message}</div>
           ) : (
-            <div className="grid lg:grid-cols-5 sm:grid-cols-3 grid-cols-2 gap-5 mb-5 mt-20">
+            <div className="grid lg:grid-cols-5 sm:grid-cols-3 grid-cols-2 gap-5 mb-5 mt-10">
               {data?.pages?.map((page, index) => (
                 <React.Fragment key={index}>
                   {page?.mediaData?.map((media) => (
@@ -191,6 +193,18 @@ const MediaPage = () => {
               ))}
             </div>
           )}
+          <div className="flex justify-center items-center mt-5">
+            {hasNextPage && (
+              <ButtonLoading
+                type="button"
+                onClick={() => fetchNextPage()}
+                text="Load More Product"
+                loading={isFetching}
+              >
+                Load More Product
+              </ButtonLoading>
+            )}
+          </div>
         </CardContent>
       </div>
     </div>

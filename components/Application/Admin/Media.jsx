@@ -21,17 +21,6 @@ const Media = ({
   selectedMedia,
   setSelectedMedia,
 }) => {
-  // const handleCheck = () => {
-  //   console.log("Handle Checked");
-  //   let newSelectedMedia = [];
-  //   if (selectedMedia.includes(media_id)) {
-  //     newSelectedMedia = selectedMedia.filter((m) => m !== media._id);
-  //   } else {
-  //     newSelectedMedia = [...selectedMedia, media._id];
-  //   }
-  //   setSelectedMedia(newSelectedMedia);
-  // };
-
   const handleCheck = (checked) => {
     setSelectedMedia((prev) => {
       if (checked) {
@@ -85,7 +74,10 @@ const Media = ({
               </>
             )}
 
-            <DropdownMenuItem className="cursor-pointer">
+            <DropdownMenuItem
+              onClick={() => handleDelete([media._id], deleteType)}
+              className="cursor-pointer"
+            >
               <LuTrash color="red" />
               {deleteType === "SD" ? "Move Into Trash" : "Delete Permanently"}
             </DropdownMenuItem>
